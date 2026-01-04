@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Image, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/context/AuthContext';
 import { Card } from '@/components/Card';
@@ -18,9 +18,33 @@ import {
 } from 'lucide-react-native';
 import { StatusBar } from 'expo-status-bar';
 
+const { width } = Dimensions.get('window');
+
+// Advertisement images for slideshow
+const advertisementImages = [
+  'https://via.placeholder.com/400x200/2563EB/FFFFFF?text=Health+Insurance+Benefits',
+  'https://via.placeholder.com/400x200/059669/FFFFFF?text=Get+Your+Annual+Checkup',
+  'https://via.placeholder.com/400x200/DC2626/FFFFFF?text=Emergency+Coverage+24%2F7',
+];
+
 export default function SettingsScreen() {
   const { user, logout } = useAuth();
   const [showHistory, setShowHistory] = useState(false);
+  const [currentAdIndex, setCurrentAdIndex] = useState(0);
+  const adIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Slideshow effect
+  useEffect(() => {
+    adIntervalRef.current = setInterval(() => {
+      setCurrentAdIndex((prevIndex) => (prevIndex + 1) % advertisementImages.length);
+    }, 5000); // Change ad every 5 seconds
+
+    return () => {
+      if (adIntervalRef.current) {
+        clearInterval(adIntervalRef.current);
+      }
+    };
+  }, []);
 
   const handleLogout = () => {
     Alert.alert(
@@ -162,6 +186,28 @@ export default function SettingsScreen() {
             <Text style={styles.settingsNote}>
               These settings will be available in the final version of the app.
             </Text>
+          </Card>
+
+          {/* Advertisement Slideshow */}
+          <Card style={styles.adCard}>
+            <View style={styles.adContainer}>
+              <Image
+                source={{ uri: advertisementImages[currentAdIndex] }}
+                style={styles.adImage}
+                resizeMode="cover"
+              />
+              <View style={styles.adIndicators}>
+                {advertisementImages.map((_, index) => (
+                  <View
+                    key={index}
+                    style={[
+                      styles.adIndicator,
+                      index === currentAdIndex && styles.adIndicatorActive
+                    ]}
+                  />
+                ))}
+              </View>
+            </View>
           </Card>
 
           {/* Logout Button */}
@@ -339,6 +385,39 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     marginTop: 12,
     textAlign: 'center',
+  },
+  adCard: {
+    marginTop: 20,
+    padding: 0,
+    overflow: 'hidden',
+  },
+  adContainer: {
+    position: 'relative',
+  },
+  adImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 12,
+  },
+  adIndicators: {
+    position: 'absolute',
+    bottom: 12,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  adIndicator: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    marginHorizontal: 4,
+  },
+  adIndicatorActive: {
+    backgroundColor: '#FFFFFF',
+    width: 24,
   },
   logoutContainer: {
     marginTop: 20,

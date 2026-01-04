@@ -57,10 +57,9 @@ export default function DashboardLayout({
       >
         <div className="flex h-full flex-col">
           <div className="flex h-16 items-center gap-2 border-b border-gray-200 px-6">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
-              <Shield className="h-5 w-5 text-white" />
+            <div className="flex items-center">
+              <img src="/images/ameridea-logo.png" alt="" className="h-10 w-auto" style={{maxWidth: 140}} />
             </div>
-            <span className="text-xl font-bold text-gray-900">AMERIDEA</span>
           </div>
 
           <div className="flex-1 overflow-y-auto py-6">

@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 const DEMO_CREDENTIALS = {
   email: "demo@ameridea.com",
@@ -28,7 +29,10 @@ export default function LoginPage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded shadow">
-        <h2 className="text-2xl font-bold text-center">Login to Ameridea</h2>
+        <div className="flex flex-col items-center mb-4">
+          <Image src="/images/ameridea-logo.png" alt="" width={180} height={60} priority />
+        </div>
+        <h2 className="text-2xl font-bold text-center">Login</h2>
         <form className="space-y-4" onSubmit={handleLogin}>
           <div>
             <label className="block mb-1 font-medium">Email</label>

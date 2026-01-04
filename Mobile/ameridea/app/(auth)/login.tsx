@@ -127,12 +127,6 @@ export default function LoginScreen() {
               </Link>
             </Text>
           </View>
-
-          <View style={styles.demoCredentials}>
-            <Text style={styles.demoText}>Demo Credentials:</Text>
-            <Text style={styles.demoText}>Email: david@example.com</Text>
-            <Text style={styles.demoText}>Password: password123</Text>
-          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </>

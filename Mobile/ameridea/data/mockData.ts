@@ -1,0 +1,292 @@
+import { User, BillsPayable } from '@/types/auth';
+import { Coverage } from '@/types/coverage';
+import { Claim } from '@/types/claims';
+import { Message, Conversation } from '@/types/messages';
+import { HistoryItem } from '@/types/history';
+
+export const mockUsers: User[] = [
+  {
+    id: '1',
+    fullName: 'David Johnson',
+    email: 'david@example.com',
+    dateOfBirth: '1985-06-15',
+    policyNumber: 'POL-2024-0001',
+    policyStatus: 'Active',
+  },
+  {
+    id: '2',
+    fullName: 'Sarah Williams',
+    email: 'sarah@example.com',
+    dateOfBirth: '1990-03-22',
+    policyNumber: 'POL-2024-0002',
+    policyStatus: 'Active',
+  },
+];
+
+export const mockCredentials = {
+  'david@example.com': 'password123',
+  'sarah@example.com': 'password123',
+};
+
+export const mockBillsPayable: BillsPayable[] = [
+  {
+    id: '1',
+    description: 'Deductible - Emergency Room Visit',
+    amount: 350.00,
+    dueDate: '2024-02-15',
+    status: 'Pending',
+  },
+  {
+    id: '2',
+    description: 'Over-Cap Amount - Specialist Consultation',
+    amount: 125.50,
+    dueDate: '2024-02-20',
+    status: 'Overdue',
+  },
+];
+
+export const mockCoverages: Coverage[] = [
+  {
+    id: '1',
+    name: 'Annual Medical',
+    type: 'Medical',
+    limit: 5000.00,
+    used: 1250.00,
+    remaining: 3750.00,
+    description: 'General medical services including doctor visits, lab tests, and procedures',
+    icon: 'medical',
+  },
+  {
+    id: '2',
+    name: 'Emergency Care',
+    type: 'Medical',
+    limit: 10000.00,
+    used: 350.00,
+    remaining: 9650.00,
+    description: 'Emergency room visits and urgent care services',
+    icon: 'emergency',
+  },
+  {
+    id: '3',
+    name: 'Prescription Drugs',
+    type: 'Prescription',
+    limit: 2000.00,
+    used: 450.00,
+    remaining: 1550.00,
+    description: 'Prescription medications and pharmacy services',
+    icon: 'prescription',
+  },
+  {
+    id: '4',
+    name: 'Dental Care',
+    type: 'Dental',
+    limit: 1500.00,
+    used: 300.00,
+    remaining: 1200.00,
+    description: 'Dental cleanings, fillings, and basic procedures',
+    icon: 'dental',
+  },
+  {
+    id: '5',
+    name: 'Vision Care',
+    type: 'Vision',
+    limit: 500.00,
+    used: 150.00,
+    remaining: 350.00,
+    description: 'Eye exams, glasses, and contact lenses',
+    icon: 'vision',
+  },
+  {
+    id: '6',
+    name: 'Specialist Visits',
+    type: 'Medical',
+    limit: 3000.00,
+    used: 800.00,
+    remaining: 2200.00,
+    description: 'Consultations with medical specialists',
+    icon: 'specialist',
+  },
+];
+
+export const mockClaims: Claim[] = [
+  {
+    id: '1',
+    claimNumber: 'CLM-2024-0001',
+    date: '2024-01-15',
+    provider: 'City General Hospital',
+    service: 'Emergency Room Visit',
+    amount: 350.00,
+    status: 'Approved',
+    description: 'Emergency treatment for chest pain',
+    submittedDate: '2024-01-16',
+    processedDate: '2024-01-18',
+  },
+  {
+    id: '2',
+    claimNumber: 'CLM-2024-0002',
+    date: '2024-01-22',
+    provider: 'Dr. Sarah Johnson',
+    service: 'Specialist Consultation',
+    amount: 125.50,
+    status: 'Pending',
+    description: 'Cardiology consultation and EKG',
+    submittedDate: '2024-01-23',
+  },
+  {
+    id: '3',
+    claimNumber: 'CLM-2024-0003',
+    date: '2024-02-01',
+    provider: 'MediLab Diagnostics',
+    service: 'Laboratory Tests',
+    amount: 85.00,
+    status: 'Processing',
+    description: 'Blood work and cholesterol screening',
+    submittedDate: '2024-02-02',
+  },
+  {
+    id: '4',
+    claimNumber: 'CLM-2024-0004',
+    date: '2024-02-05',
+    provider: 'Downtown Pharmacy',
+    service: 'Prescription Medication',
+    amount: 45.00,
+    status: 'Rejected',
+    description: 'Prescription not covered under current plan',
+    submittedDate: '2024-02-06',
+    processedDate: '2024-02-08',
+  },
+  {
+    id: '5',
+    claimNumber: 'CLM-2024-0005',
+    date: '2024-02-10',
+    provider: 'Family Dental Care',
+    service: 'Dental Cleaning',
+    amount: 120.00,
+    status: 'Approved',
+    description: 'Routine dental cleaning and examination',
+    submittedDate: '2024-02-11',
+    processedDate: '2024-02-12',
+  },
+];
+
+export const mockMessages: Message[] = [
+  {
+    id: '1',
+    text: 'Hello! I need help understanding my recent claim status.',
+    sender: 'user',
+    timestamp: '2024-02-10T09:00:00Z',
+    isRead: true,
+  },
+  {
+    id: '2',
+    text: 'Hi David! I\'d be happy to help you with your claim. Can you please provide your claim number?',
+    sender: 'support',
+    timestamp: '2024-02-10T09:15:00Z',
+    isRead: true,
+  },
+  {
+    id: '3',
+    text: 'Sure, it\'s CLM-2024-0002. I submitted it last week but haven\'t heard back.',
+    sender: 'user',
+    timestamp: '2024-02-10T09:20:00Z',
+    isRead: true,
+  },
+  {
+    id: '4',
+    text: 'Thank you! I can see your claim for the cardiology consultation. It\'s currently under review by our medical team. You should receive an update within 2-3 business days.',
+    sender: 'support',
+    timestamp: '2024-02-10T09:25:00Z',
+    isRead: true,
+  },
+  {
+    id: '5',
+    text: 'Great, thank you for the update! Is there anything else I need to provide?',
+    sender: 'user',
+    timestamp: '2024-02-10T09:30:00Z',
+    isRead: true,
+  },
+  {
+    id: '6',
+    text: 'No additional documentation is needed at this time. We have all the required information from your provider. I\'ll make sure to follow up if anything else is needed.',
+    sender: 'support',
+    timestamp: '2024-02-10T09:35:00Z',
+    isRead: true,
+  },
+  {
+    id: '7',
+    text: 'Perfect! One more question - when will my new insurance cards arrive?',
+    sender: 'user',
+    timestamp: '2024-02-12T14:00:00Z',
+    isRead: true,
+  },
+  {
+    id: '8',
+    text: 'Your new insurance cards were mailed on February 8th and should arrive within 7-10 business days. If you need a digital copy sooner, I can email you a temporary card.',
+    sender: 'support',
+    timestamp: '2024-02-12T14:10:00Z',
+    isRead: false,
+  },
+];
+
+export const mockConversation: Conversation = {
+  id: '1',
+  title: 'General Support',
+  lastMessage: 'Your new insurance cards were mailed on February 8th...',
+  lastMessageTime: '2024-02-12T14:10:00Z',
+  unreadCount: 1,
+  messages: mockMessages,
+};
+
+export const mockHistory: HistoryItem[] = [
+  {
+    id: '1',
+    type: 'claim',
+    title: 'Emergency Room Visit',
+    description: 'Claim CLM-2024-0001 - City General Hospital',
+    date: '2024-01-18',
+    status: 'Approved',
+    amount: 350.00,
+  },
+  {
+    id: '2',
+    type: 'loa',
+    title: 'Letter of Authorization Request',
+    description: 'Cardiology specialist referral',
+    date: '2024-01-15',
+    status: 'Approved',
+  },
+  {
+    id: '3',
+    type: 'certificate',
+    title: 'Insurance Certificate Download',
+    description: 'Policy certificate for employer verification',
+    date: '2024-01-10',
+    status: 'Completed',
+  },
+  {
+    id: '4',
+    type: 'claim',
+    title: 'Dental Cleaning',
+    description: 'Claim CLM-2024-0005 - Family Dental Care',
+    date: '2024-02-12',
+    status: 'Approved',
+    amount: 120.00,
+  },
+  {
+    id: '5',
+    type: 'message',
+    title: 'Support Chat Session',
+    description: 'Discussed claim status and insurance cards',
+    date: '2024-02-12',
+    status: 'Resolved',
+  },
+  {
+    id: '6',
+    type: 'claim',
+    title: 'Prescription Medication',
+    description: 'Claim CLM-2024-0004 - Downtown Pharmacy',
+    date: '2024-02-08',
+    status: 'Rejected',
+    amount: 45.00,
+  },
+];

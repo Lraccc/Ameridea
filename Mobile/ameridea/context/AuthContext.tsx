@@ -2,7 +2,7 @@ import React, { createContext, useContext, useReducer, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect } from 'react';
 import { AuthState, User, LoginCredentials, RegisterData } from '@/types/auth';
-import { mockUsers, mockCredentials } from '@/data/mockData';
+import { authService } from '@/services/auth.service';
 
 interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<boolean>;
@@ -84,18 +84,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (credentials: LoginCredentials): Promise<boolean> => {
     dispatch({ type: 'LOGIN_START' });
 
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    const storedPassword = mockCredentials[credentials.email as keyof typeof mockCredentials];
-    
-    if (storedPassword && storedPassword === credentials.password) {
-      const user = mockUsers.find(u => u.email === credentials.email);
-      if (user) {
-        await AsyncStorage.setItem('user', JSON.stringify(user));
-        dispatch({ type: 'LOGIN_SUCCESS', payload: user });
-        return true;
-      }
+    try {
+      const response = await authService.login(credentials);
+      await AsyncStorage.setItem('user', JSON.stringify(response.user));
+      dispatch({ type: 'LOGIN_SUCCESS', payload: response.user });
+      return true;
+    } catch (error) {
+      console.error('Login error:', error);
+      dispatch({ type: 'LOGIN_FAILURE' });
+      return false;
     }
 
     dispatch({ type: 'LOGIN_FAILURE' });
@@ -103,41 +100,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const register = async (data: RegisterData): Promise<boolean> => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    dispatch({ type: 'LOGIN_START' });
 
-    // Check if user already exists
-    const existingUser = mockUsers.find(u => u.email === data.email);
-    if (existingUser) {
+    try {
+      const response = await authService.register(data);
+      await AsyncStorage.setItem('user', JSON.stringify(response.user));
+      dispatch({ type: 'REGISTER_SUCCESS', payload: response.user });
+      return true;
+    } catch (error) {
+      console.error('Register error:', error);
+      dispatch({ type: 'LOGIN_FAILURE' });
       return false;
     }
-
-    // Create new user
-    const newUser: User = {
-      id: String(mockUsers.length + 1),
-      fullName: data.fullName,
-      email: data.email,
-      dateOfBirth: data.dateOfBirth,
-      policyNumber: `POL-2024-${String(mockUsers.length + 1).padStart(4, '0')}`,
-      policyStatus: 'Active',
-    };
-
-    // Add to mock data
-    mockUsers.push(newUser);
-    (mockCredentials as any)[data.email] = data.password;
-
-    await AsyncStorage.setItem('user', JSON.stringify(newUser));
-    dispatch({ type: 'REGISTER_SUCCESS', payload: newUser });
-    return true;
   };
 
   const logout = async () => {
     try {
+      await authService.logout();
       await AsyncStorage.removeItem('user');
+      dispatch({ type: 'LOGOUT' });
     } catch (error) {
-      console.error('Error during logout:', error);
+      console.error('Logout error:', error);
+      // Still logout locally even if API call fails
+      await AsyncStorage.removeItem('user');
+      dispatch({ type: 'LOGOUT' });
     }
-    dispatch({ type: 'LOGOUT' });
   };
 
   return (

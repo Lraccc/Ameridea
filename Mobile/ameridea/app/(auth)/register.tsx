@@ -65,6 +65,26 @@ export default function RegisterScreen() {
     }
   };
 
+  // Auto-format date of birth as user types (YYYY-MM-DD)
+  const handleDateChange = (value: string) => {
+    // Remove all non-numeric characters
+    const numbers = value.replace(/\D/g, '');
+    
+    // Format as YYYY-MM-DD
+    let formatted = '';
+    if (numbers.length > 0) {
+      formatted = numbers.substring(0, 4);
+    }
+    if (numbers.length > 4) {
+      formatted += '-' + numbers.substring(4, 6);
+    }
+    if (numbers.length > 6) {
+      formatted += '-' + numbers.substring(6, 8);
+    }
+    
+    updateFormData('dateOfBirth', formatted);
+  };
+
   return (
     <>
       <StatusBar style="dark" />
@@ -113,9 +133,10 @@ export default function RegisterScreen() {
               label="Date of Birth"
               placeholder="YYYY-MM-DD"
               value={formData.dateOfBirth}
-              onChangeText={(value) => updateFormData('dateOfBirth', value)}
+              onChangeText={handleDateChange}
               error={errors.dateOfBirth}
               keyboardType="numeric"
+              maxLength={10}
             />
 
             <Button

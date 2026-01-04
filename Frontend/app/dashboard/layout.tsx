@@ -63,26 +63,6 @@ export default function DashboardLayout({
           </div>
 
           <div className="flex-1 overflow-y-auto py-6">
-            <div className="mb-6 px-4">
-              <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-3">
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src="" alt="Della Tolio" />
-                  <AvatarFallback className="bg-blue-600 text-white">
-                    DT
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
-                    Della Tolio
-                  </p>
-                  <p className="text-xs text-gray-500 truncate">
-                    della.tolio@example.com
-                  </p>
-                </div>
-                <ChevronDown className="h-4 w-4 text-gray-400 flex-shrink-0" />
-              </div>
-            </div>
-
             <nav className="space-y-1 px-3">
               {navItems.map((item) => {
                 const Icon = item.icon;
@@ -109,15 +89,24 @@ export default function DashboardLayout({
                 );
               })}
             </nav>
-          </div>
 
-          <div className="border-t border-gray-200 p-4">
-            <button className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-600 hover:bg-gray-50">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100">
-                <span className="text-xs font-semibold">↗</span>
+            {/* Advertisement Slideshow Placeholder */}
+            <div className="px-3 mt-6">
+              <div className="relative overflow-hidden rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200">
+                <div className="aspect-[4/3] flex items-center justify-center p-4">
+                  <div className="text-center">
+                    <div className="text-3xl mb-2">📢</div>
+                    <p className="text-xs font-medium text-blue-700">Advertisement</p>
+                    <p className="text-xs text-blue-600 mt-1">Slideshow placeholder</p>
+                  </div>
+                </div>
+                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                  <div className="h-1.5 w-1.5 rounded-full bg-blue-600"></div>
+                  <div className="h-1.5 w-1.5 rounded-full bg-blue-300"></div>
+                  <div className="h-1.5 w-1.5 rounded-full bg-blue-300"></div>
+                </div>
               </div>
-              <span className="text-xs">Expand Menu</span>
-            </button>
+            </div>
           </div>
         </div>
       </aside>
@@ -155,13 +144,22 @@ export default function DashboardLayout({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+              <Button variant="ghost" className="flex items-center gap-3 rounded-lg p-2 hover:bg-gray-50">
                 <Avatar className="h-10 w-10">
                   <AvatarImage src="" alt="Della Tolio" />
                   <AvatarFallback className="bg-blue-600 text-white">
                     DT
                   </AvatarFallback>
                 </Avatar>
+                <div className="flex-1 min-w-0 text-left">
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    Della Tolio
+                  </p>
+                  <p className="text-xs text-gray-500 truncate">
+                    della.tolio@example.com
+                  </p>
+                </div>
+                <ChevronDown className="h-4 w-4 text-gray-400 flex-shrink-0" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">

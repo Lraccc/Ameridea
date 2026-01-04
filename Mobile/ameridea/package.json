@@ -6,15 +6,17 @@
   "scripts": {
     "dev": "EXPO_NO_TELEMETRY=1 expo start",
     "build:web": "expo export --platform web",
-    "build:android": "npx expo prebuild --platform android && cd android && ./gradlew assembleRelease",
-    "build:android:debug": "npx expo prebuild --platform android && cd android && ./gradlew assembleDebug",
+    "build:android": "npx expo prebuild --platform android && node run-gradlew.js assembleRelease",
+    "build:android:debug": "npx expo prebuild --platform android && node run-gradlew.js assembleDebug",
     "install:android": "npm run build:android:debug && adb install android/app/build/outputs/apk/debug/app-debug.apk",
     "install:android:release": "npm run build:android && adb install android/app/build/outputs/apk/release/app-release.apk",
     "adb:devices": "adb devices",
     "adb:uninstall": "adb uninstall com.anonymous.boltexpostarter",
     "prebuild:android": "npx expo prebuild --platform android --clean",
     "lint": "expo lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "android": "expo run:android",
+    "ios": "expo run:ios"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",

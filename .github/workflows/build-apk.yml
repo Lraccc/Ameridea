@@ -1,0 +1,62 @@
+name: Build Android APK
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./Mobile/ameridea
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
+          cache: 'npm'
+          cache-dependency-path: './Mobile/ameridea/package-lock.json'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Expo
+        uses: expo/expo-github-action@v8
+        with:
+          expo-version: latest
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate native Android project
+        run: npx expo prebuild --platform android --clean
+
+      - name: Build Android APK
+        working-directory: ./Mobile/ameridea/android
+        run: ./gradlew assembleRelease --no-daemon
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release
+          path: Mobile/ameridea/android/app/build/outputs/apk/release/app-release.apk
+
+      - name: Build summary
+        run: |
+          echo "✅ APK built successfully!"
+          echo "📦 Download the APK from the Actions artifacts"

@@ -33,10 +33,12 @@ const getCoverageIcon = (type: Coverage['type']) => {
 };
 
 const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('en-PH', {
     style: 'currency',
-    currency: 'USD',
-  }).format(amount);
+    currency: 'PHP',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount).replace('PHP', '₱');
 };
 
 function CoverageCard({ coverage }: { coverage: Coverage }) {

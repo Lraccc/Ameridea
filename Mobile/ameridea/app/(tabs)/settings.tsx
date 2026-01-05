@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Image, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Image, Dimensions, Modal, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '@/context/AuthContext';
 import { Card } from '@/components/Card';
 import { HistoryItem } from '@/components/HistoryItem';
@@ -14,7 +15,12 @@ import {
   Shield,
   Mail,
   Calendar,
-  ChevronRight 
+  ChevronRight,
+  Camera,
+  Lock,
+  Edit,
+  X,
+  DollarSign
 } from 'lucide-react-native';
 import { StatusBar } from 'expo-status-bar';
 
@@ -32,6 +38,20 @@ export default function SettingsScreen() {
   const [showHistory, setShowHistory] = useState(false);
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
   const adIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Profile picture state
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  
+  // Email update modal
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
+  const [confirmEmail, setConfirmEmail] = useState('');
+  
+  // Password update modal
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   // Slideshow effect
   useEffect(() => {
@@ -60,6 +80,74 @@ export default function SettingsScreen() {
       ]
     );
   };
+  
+  const handlePickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    
+    if (status !== 'granted') {
+      Alert.alert('Permission Denied', 'Sorry, we need camera roll permissions to upload a profile picture.');
+      return;
+    }
+    
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    
+    if (!result.canceled) {
+      setProfileImage(result.assets[0].uri);
+      Alert.alert('Success', 'Profile picture updated successfully!');
+    }
+  };
+  
+  const handleUpdateEmail = () => {
+    if (!newEmail || !confirmEmail) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+    
+    if (newEmail !== confirmEmail) {
+      Alert.alert('Error', 'Emails do not match');
+      return;
+    }
+    
+    if (!/\S+@\S+\.\S+/.test(newEmail)) {
+      Alert.alert('Error', 'Please enter a valid email address');
+      return;
+    }
+    
+    // Simulate API call
+    Alert.alert('Success', 'Email updated successfully!');
+    setShowEmailModal(false);
+    setNewEmail('');
+    setConfirmEmail('');
+  };
+  
+  const handleUpdatePassword = () => {
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      Alert.alert('Error', 'New passwords do not match');
+      return;
+    }
+    
+    if (newPassword.length < 6) {
+      Alert.alert('Error', 'Password must be at least 6 characters');
+      return;
+    }
+    
+    // Simulate API call
+    Alert.alert('Success', 'Password updated successfully!');
+    setShowPasswordModal(false);
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmPassword('');
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -82,11 +170,25 @@ export default function SettingsScreen() {
           <Card style={styles.profileCard}>
             <View style={styles.profileHeader}>
               <View style={styles.avatarContainer}>
-                <User size={32} color="#2563EB" />
+                {profileImage ? (
+                  <Image source={{ uri: profileImage }} style={styles.avatarImage} />
+                ) : (
+                  <User size={32} color="#2563EB" />
+                )}
+                <TouchableOpacity 
+                  style={styles.cameraButton}
+                  onPress={handlePickImage}
+                  accessibilityLabel="Update profile picture"
+                >
+                  <Camera size={16} color="#FFFFFF" />
+                </TouchableOpacity>
+                <Text style={styles.avatarHelperText}>Tap to update</Text>
               </View>
               <View style={styles.profileInfo}>
                 <Text style={styles.profileName}>{user.fullName}</Text>
-                <Text style={styles.profileEmail}>{user.email}</Text>
+                <View style={styles.emailRow}>
+                  <Text style={styles.profileEmail}>{user.email}</Text>
+                </View>
               </View>
             </View>
             
@@ -158,34 +260,52 @@ export default function SettingsScreen() {
           <Card>
             <View style={styles.settingsHeader}>
               <SettingsIcon size={24} color="#2563EB" />
-              <Text style={styles.settingsTitle}>Account Settings</Text>
+              <Text style={styles.settingsTitle}>More Settings</Text>
             </View>
-            
+            <View style={styles.settingsOptions}>
+              <TouchableOpacity 
+                style={styles.settingsOption}
+                onPress={() => setShowPasswordModal(true)}
+              >
+                <View style={styles.settingsOptionLeft}>
+                  <Lock size={20} color="#6B7280" />
+                  <Text style={styles.settingsOptionText}>Change Password</Text>
+                </View>
+                <ChevronRight size={16} color="#9CA3AF" />
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.settingsOption}
+                onPress={() => setShowEmailModal(true)}
+              >
+                <View style={styles.settingsOptionLeft}>
+                  <Mail size={20} color="#6B7280" />
+                  <Text style={styles.settingsOptionText}>Update Email</Text>
+                </View>
+                <ChevronRight size={16} color="#9CA3AF" />
+              </TouchableOpacity>
+            </View>
+          </Card>
+
+          {/* Billing Section */}
+          <Card>
+            <View style={styles.settingsHeader}>
+              <DollarSign size={24} color="#2563EB" />
+              <Text style={styles.settingsTitle}>Billing</Text>
+            </View>
             <View style={styles.settingsOptions}>
               <TouchableOpacity style={styles.settingsOption}>
-                <Text style={styles.settingsOptionText}>Notification Preferences</Text>
+                <View style={styles.settingsOptionLeft}>
+                  <Text style={styles.settingsOptionText}>Payment Method</Text>
+                </View>
                 <ChevronRight size={16} color="#9CA3AF" />
               </TouchableOpacity>
-              
               <TouchableOpacity style={styles.settingsOption}>
-                <Text style={styles.settingsOptionText}>Privacy Settings</Text>
-                <ChevronRight size={16} color="#9CA3AF" />
-              </TouchableOpacity>
-              
-              <TouchableOpacity style={styles.settingsOption}>
-                <Text style={styles.settingsOptionText}>Security</Text>
-                <ChevronRight size={16} color="#9CA3AF" />
-              </TouchableOpacity>
-              
-              <TouchableOpacity style={styles.settingsOption}>
-                <Text style={styles.settingsOptionText}>Help & Support</Text>
+                <View style={styles.settingsOptionLeft}>
+                  <Text style={styles.settingsOptionText}>Billing History</Text>
+                </View>
                 <ChevronRight size={16} color="#9CA3AF" />
               </TouchableOpacity>
             </View>
-            
-            <Text style={styles.settingsNote}>
-              These settings will be available in the final version of the app.
-            </Text>
           </Card>
 
           {/* Advertisement Slideshow */}
@@ -219,12 +339,88 @@ export default function SettingsScreen() {
             />
           </View>
         </ScrollView>
+        
+        
+        {/* Password Update Modal */}
+        <Modal
+          visible={showPasswordModal}
+          animationType="slide"
+          transparent={true}
+          onRequestClose={() => setShowPasswordModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Change Password</Text>
+                <TouchableOpacity onPress={() => setShowPasswordModal(false)}>
+                  <X size={24} color="#6B7280" />
+                </TouchableOpacity>
+              </View>
+              
+              <View style={styles.modalBody}>
+                <View style={styles.inputGroup}>
+                  <Text style={styles.inputLabel}>Current Password</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter current password"
+                    value={currentPassword}
+                    onChangeText={setCurrentPassword}
+                    secureTextEntry
+                  />
+                </View>
+                
+                <View style={styles.inputGroup}>
+                  <Text style={styles.inputLabel}>New Password</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter new password"
+                    value={newPassword}
+                    onChangeText={setNewPassword}
+                    secureTextEntry
+                  />
+                </View>
+                
+                <View style={styles.inputGroup}>
+                  <Text style={styles.inputLabel}>Confirm New Password</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Confirm new password"
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
+                    secureTextEntry
+                  />
+                </View>
+                
+                <View style={styles.modalButtons}>
+                  <TouchableOpacity 
+                    style={[styles.modalButton, styles.cancelButton]}
+                    onPress={() => setShowPasswordModal(false)}
+                  >
+                    <Text style={styles.cancelButtonText}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.modalButton, styles.saveButton]}
+                    onPress={handleUpdatePassword}
+                  >
+                    <Text style={styles.saveButtonText}>Update</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </View>
+        </Modal>
       </SafeAreaView>
     </>
   );
 }
 
 const styles = StyleSheet.create({
+  avatarHelperText: {
+    fontSize: 12,
+    color: '#6B7280',
+    textAlign: 'center',
+    marginTop: 4,
+  },
   container: {
     flex: 1,
     backgroundColor: '#F8FAFC',
@@ -255,6 +451,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 16,
+    position: 'relative',
+  },
+  avatarImage: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+  },
+  cameraButton: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#2563EB',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
   },
   profileInfo: {
     flex: 1,
@@ -268,6 +483,11 @@ const styles = StyleSheet.create({
   profileEmail: {
     fontSize: 16,
     color: '#6B7280',
+  },
+  emailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   profileDetails: {
     borderTopWidth: 1,
@@ -375,16 +595,94 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#F9FAFB',
   },
+  settingsOptionLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
   settingsOptionText: {
     fontSize: 16,
     color: '#1F2937',
   },
-  settingsNote: {
-    fontSize: 12,
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    width: '100%',
+    maxWidth: 400,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1F2937',
+  },
+  modalBody: {
+    padding: 20,
+  },
+  inputGroup: {
+    marginBottom: 16,
+  },
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#374151',
+    marginBottom: 8,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: '#1F2937',
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 24,
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: '#F3F4F6',
+  },
+  saveButton: {
+    backgroundColor: '#2563EB',
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
     color: '#6B7280',
-    fontStyle: 'italic',
-    marginTop: 12,
-    textAlign: 'center',
+  },
+  saveButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
   adCard: {
     marginTop: 20,

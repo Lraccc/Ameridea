@@ -12,10 +12,12 @@ import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 
 const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('en-PH', {
     style: 'currency',
-    currency: 'USD',
-  }).format(amount);
+    currency: 'PHP',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount).replace('PHP', '₱');
 };
 
 const formatDate = (dateString: string) => {
@@ -48,7 +50,8 @@ function ClaimCard({ claim, onPress }: { claim: Claim; onPress: () => void }) {
             <Text style={styles.claimDetailText}>{claim.provider}</Text>
           </View>
           <View style={styles.claimDetailItem}>
-            <DollarSign size={16} color="#6B7280" />
+            {/* Peso sign icon for PH currency */}
+            <Text style={{fontSize: 16, color: '#6B7280', fontWeight: 'bold', marginRight: 2}}>₱</Text>
             <Text style={styles.claimDetailText}>{formatCurrency(claim.amount)}</Text>
           </View>
         </View>

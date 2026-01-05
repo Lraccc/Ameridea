@@ -172,7 +172,8 @@ export default function OverviewScreen() {
               onPress={() => setShowBillsDetails(!showBillsDetails)}
               activeOpacity={0.7}
             >
-              <DollarSign size={24} color="#DC2626" />
+              {/* Peso sign icon for PH currency */}
+              <Text style={{fontSize: 24, color: '#DC2626', fontWeight: 'bold', marginRight: 4}}>₱</Text>
               <Text style={styles.sectionTitle}>Bills Payable</Text>
               {showBillsDetails ? (
                 <ChevronUp size={20} color="#6B7280" style={styles.chevronIcon} />
@@ -183,7 +184,7 @@ export default function OverviewScreen() {
             
             <View style={styles.totalAmountContainer}>
               <Text style={styles.totalAmountLabel}>Your Next Bill</Text>
-              <Text style={styles.totalAmount}>${totalAmountDue.toFixed(2)}</Text>
+              <Text style={styles.totalAmount}>₱{totalAmountDue.toFixed(2)}</Text>
               <Text style={styles.totalAmountSubtext}>*Based on hospital bills minus insurance coverage</Text>
             </View>
 
@@ -195,19 +196,19 @@ export default function OverviewScreen() {
                       <Text style={styles.billDescription}>{bill.description}</Text>
                       <View style={styles.billBreakdown}>
                         <Text style={styles.billBreakdownText}>
-                          Hospital Bill: ${bill.hospitalBill.toFixed(2)}
+                          Hospital Bill: ₱{bill.hospitalBill.toFixed(2)}
                         </Text>
                         <Text style={styles.billBreakdownText}>
-                          Insurance Coverage: ${bill.insuranceCoverage.toFixed(2)}
+                          Insurance Coverage: ₱{bill.insuranceCoverage.toFixed(2)}
                         </Text>
                         <Text style={styles.billBreakdownHighlight}>
-                          You Pay: ${bill.amount.toFixed(2)}
+                          You Pay: ₱{bill.amount.toFixed(2)}
                         </Text>
                       </View>
                       <Text style={styles.billDueDate}>Due: {new Date(bill.dueDate).toLocaleDateString()}</Text>
                     </View>
                     <View style={styles.billAmountContainer}>
-                      <Text style={styles.billAmount}>${bill.amount.toFixed(2)}</Text>
+                      <Text style={styles.billAmount}>₱{bill.amount.toFixed(2)}</Text>
                       <View style={[
                         styles.billStatusBadge,
                         bill.status === 'Overdue' ? styles.overdueBadge : styles.pendingBadge

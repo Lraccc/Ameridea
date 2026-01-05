@@ -1,7 +1,9 @@
 export interface BillsPayable {
   id: string;
   description: string;
-  amount: number;
+  hospitalBill: number;
+  insuranceCoverage: number;
+  amount: number; // Amount user needs to pay (hospitalBill - insuranceCoverage)
   dueDate: string;
   status: 'Pending' | 'Overdue' | 'Paid';
 }

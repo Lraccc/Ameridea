@@ -31,17 +31,21 @@ export const mockCredentials = {
 export const mockBillsPayable: BillsPayable[] = [
   {
     id: '1',
-    description: 'Deductible - Emergency Room Visit',
-    amount: 350.00,
+    description: 'Hospital Admission - General Ward',
+    hospitalBill: 2400.00,
+    insuranceCoverage: 2000.00,
+    amount: 400.00, // Next bill: difference between hospital bill and insurance coverage
     dueDate: '2024-02-15',
     status: 'Pending',
   },
   {
     id: '2',
-    description: 'Over-Cap Amount - Specialist Consultation',
-    amount: 125.50,
+    description: 'Specialist Consultation',
+    hospitalBill: 250.00,
+    insuranceCoverage: 200.00,
+    amount: 50.00,
     dueDate: '2024-02-20',
-    status: 'Overdue',
+    status: 'Pending',
   },
 ];
 
@@ -265,6 +269,22 @@ export const mockHistory: HistoryItem[] = [
   },
   {
     id: '4',
+    type: 'loa',
+    title: 'Letter of Authorization Request',
+    description: 'MRI scan authorization',
+    date: '2024-01-08',
+    status: 'Pending',
+  },
+  {
+    id: '5',
+    type: 'loa',
+    title: 'Letter of Authorization Request',
+    description: 'Physical therapy sessions',
+    date: '2024-01-05',
+    status: 'Approved',
+  },
+  {
+    id: '6',
     type: 'claim',
     title: 'Dental Cleaning',
     description: 'Claim CLM-2024-0005 - Family Dental Care',
@@ -273,7 +293,7 @@ export const mockHistory: HistoryItem[] = [
     amount: 120.00,
   },
   {
-    id: '5',
+    id: '7',
     type: 'message',
     title: 'Support Chat Session',
     description: 'Discussed claim status and insurance cards',
@@ -281,7 +301,7 @@ export const mockHistory: HistoryItem[] = [
     status: 'Resolved',
   },
   {
-    id: '6',
+    id: '8',
     type: 'claim',
     title: 'Prescription Medication',
     description: 'Claim CLM-2024-0004 - Downtown Pharmacy',

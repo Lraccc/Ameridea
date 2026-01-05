@@ -11,7 +11,6 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const { login, loading } = useAuth();
 
@@ -39,11 +38,10 @@ export default function LoginScreen() {
 
     const success = await login({ email, password });
     
-    if (success) {
-      router.replace('/(tabs)');
-    } else {
+    if (!success) {
       Alert.alert('Login Failed', 'Invalid email or password. Try david@example.com / password123');
     }
+    // AuthGuard will automatically redirect on successful login
   };
 
   return (
@@ -101,16 +99,6 @@ export default function LoginScreen() {
               </View>
               {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
             </View>
-
-            <TouchableOpacity
-              style={styles.rememberMeContainer}
-              onPress={() => setRememberMe(!rememberMe)}
-            >
-              <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
-                {rememberMe && <Text style={styles.checkmark}>✓</Text>}
-              </View>
-              <Text style={styles.rememberMeText}>Remember me</Text>
-            </TouchableOpacity>
 
             <Button
               title="Sign In"
@@ -199,36 +187,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#EF4444',
     marginTop: 4,
-  },
-  rememberMeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 8,
-    marginBottom: 20,
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderWidth: 2,
-    borderColor: '#D1D5DB',
-    borderRadius: 4,
-    marginRight: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'white',
-  },
-  checkboxChecked: {
-    backgroundColor: '#2563EB',
-    borderColor: '#2563EB',
-  },
-  checkmark: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  rememberMeText: {
-    fontSize: 14,
-    color: '#374151',
   },
   footer: {
     alignItems: 'center',

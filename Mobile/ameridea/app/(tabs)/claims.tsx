@@ -1,12 +1,13 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
 import { Card } from '@/components/Card';
 import { StatusBadge } from '@/components/StatusBadge';
 import { Button } from '@/components/Button';
 import { mockClaims } from '@/data/mockData';
 import { Claim } from '@/types/claims';
-import { FileText, Calendar, DollarSign, Building, X, ListFilter as Filter } from 'lucide-react-native';
+import { FileText, Calendar, DollarSign, Building, X, ListFilter as Filter, MessageCircle } from 'lucide-react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 
@@ -130,6 +131,28 @@ function ClaimDetailModal({
             <View style={styles.modalDetailSection}>
               <Text style={styles.modalSectionTitle}>Description</Text>
               <Text style={styles.modalDescription}>{claim.description}</Text>
+            </View>
+            
+            <View style={styles.modalActionSection}>
+              <Button
+                title="Contact Claim Support"
+                onPress={() => {
+                  Alert.alert(
+                    'Contact Support',
+                    `A support conversation has been created for claim ${claim.claimNumber}. You will be redirected to messages.`,
+                    [
+                      { 
+                        text: 'OK', 
+                        onPress: () => {
+                          onClose();
+                          router.push('/(tabs)/messages');
+                        }
+                      }
+                    ]
+                  );
+                }}
+                variant="primary"
+              />
             </View>
           </Card>
         </ScrollView>
@@ -499,5 +522,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6B7280',
     lineHeight: 20,
+  },
+  modalActionSection: {
+    marginTop: 24,
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
   },
 });

@@ -18,10 +18,16 @@ type AuthAction =
   | { type: 'LOGIN_SUCCESS'; payload: User }
   | { type: 'LOGIN_FAILURE' }
   | { type: 'LOGOUT' }
-  | { type: 'REGISTER_SUCCESS'; payload: User };
+  | { type: 'REGISTER_SUCCESS'; payload: User }
+  | { type: 'CHECK_AUTH_START' }
+  | { type: 'CHECK_AUTH_COMPLETE' };
 
 const authReducer = (state: AuthState, action: AuthAction): AuthState => {
   switch (action.type) {
+    case 'CHECK_AUTH_START':
+      return { ...state, loading: true };
+    case 'CHECK_AUTH_COMPLETE':
+      return { ...state, loading: false };
     case 'LOGIN_START':
       return { ...state, loading: true };
     case 'LOGIN_SUCCESS':
@@ -59,7 +65,7 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
 const initialState: AuthState = {
   user: null,
   isAuthenticated: false,
-  loading: false,
+  loading: true, // Start with loading true to check stored auth
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -71,13 +77,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkAuthStatus = async () => {
     try {
+      dispatch({ type: 'CHECK_AUTH_START' });
       const userData = await AsyncStorage.getItem('user');
-      if (userData) {
+      const authToken = await AsyncStorage.getItem('authToken');
+      
+      if (userData && authToken) {
         const user = JSON.parse(userData);
         dispatch({ type: 'LOGIN_SUCCESS', payload: user });
+      } else {
+        dispatch({ type: 'CHECK_AUTH_COMPLETE' });
       }
     } catch (error) {
       console.error('Error checking auth status:', error);
+      dispatch({ type: 'CHECK_AUTH_COMPLETE' });
     }
   };
 
@@ -86,7 +98,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     try {
       const response = await authService.login(credentials);
+      
+      // Store both user data and auth token for persistence
       await AsyncStorage.setItem('user', JSON.stringify(response.user));
+      await AsyncStorage.setItem('authToken', 'authenticated'); // Simple token for demo
+      await AsyncStorage.setItem('loginTime', new Date().toISOString());
+      
       dispatch({ type: 'LOGIN_SUCCESS', payload: response.user });
       return true;
     } catch (error) {
@@ -94,9 +111,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       dispatch({ type: 'LOGIN_FAILURE' });
       return false;
     }
-
-    dispatch({ type: 'LOGIN_FAILURE' });
-    return false;
   };
 
   const register = async (data: RegisterData): Promise<boolean> => {
@@ -104,7 +118,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     try {
       const response = await authService.register(data);
+      
+      // Store both user data and auth token for persistence
       await AsyncStorage.setItem('user', JSON.stringify(response.user));
+      await AsyncStorage.setItem('authToken', 'authenticated');
+      await AsyncStorage.setItem('loginTime', new Date().toISOString());
+      
       dispatch({ type: 'REGISTER_SUCCESS', payload: response.user });
       return true;
     } catch (error) {
@@ -117,12 +136,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     try {
       await authService.logout();
-      await AsyncStorage.removeItem('user');
+      
+      // Clear all stored auth data
+      await AsyncStorage.multiRemove(['user', 'authToken', 'loginTime']);
+      
       dispatch({ type: 'LOGOUT' });
     } catch (error) {
       console.error('Logout error:', error);
       // Still logout locally even if API call fails
-      await AsyncStorage.removeItem('user');
+      await AsyncStorage.multiRemove(['user', 'authToken', 'loginTime']);
       dispatch({ type: 'LOGOUT' });
     }
   };

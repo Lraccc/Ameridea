@@ -1,5 +1,5 @@
 // API Configuration
-const DEV_API_URL = 'http://10.0.11.222:3001';
+const DEV_API_URL = 'http://192.168.1.16:3001';
 const PROD_API_URL = 'https://your-production-api.com';
 
 export const API_URL = __DEV__ ? DEV_API_URL : PROD_API_URL;

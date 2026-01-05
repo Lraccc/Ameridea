@@ -15,6 +15,7 @@ import {
   ChevronDown,
   Menu,
   X,
+  LogOut,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -28,6 +29,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
+import { apiService } from '@/lib/api-service';
 
 const navItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -47,14 +49,28 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [user, setUser] = useState<{ fullName: string; email: string } | null>(null);
 
   useEffect(() => {
-    // Check if user is authenticated
-    const session = localStorage.getItem("ameridea_session");
-    if (!session) {
+    // Check if user is authenticated using new auth system
+    const authToken = localStorage.getItem("authToken");
+    const storedUser = localStorage.getItem("user");
+    
+    if (!authToken) {
       router.push("/login");
+    } else if (storedUser) {
+      setUser(JSON.parse(storedUser));
     }
   }, [router]);
+
+  const handleLogout = async () => {
+    try {
+      await apiService.logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+    router.push("/login");
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -155,17 +171,17 @@ export default function DashboardLayout({
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="flex items-center gap-3 rounded-lg p-2 hover:bg-gray-50">
                 <Avatar className="h-10 w-10">
-                  <AvatarImage src="" alt="Della Tolio" />
+                  <AvatarImage src="" alt={user?.fullName || 'User'} />
                   <AvatarFallback className="bg-blue-600 text-white">
-                    DT
+                    {user?.fullName?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U'}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0 text-left">
                   <p className="text-sm font-medium text-gray-900 truncate">
-                    Della Tolio
+                    {user?.fullName || 'User'}
                   </p>
                   <p className="text-xs text-gray-500 truncate">
-                    della.tolio@example.com
+                    {user?.email || ''}
                   </p>
                 </div>
                 <ChevronDown className="h-4 w-4 text-gray-400 flex-shrink-0" />
@@ -174,9 +190,9 @@ export default function DashboardLayout({
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium">Della Tolio</p>
+                  <p className="text-sm font-medium">{user?.fullName || 'User'}</p>
                   <p className="text-xs text-gray-500">
-                    della.tolio@example.com
+                    {user?.email || ''}
                   </p>
                 </div>
               </DropdownMenuLabel>
@@ -185,12 +201,8 @@ export default function DashboardLayout({
               <DropdownMenuItem>Billing</DropdownMenuItem>
               <DropdownMenuItem>Settings</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => {
-                  localStorage.removeItem("ameridea_session");
-                  window.location.href = "/login";
-                }}
-              >
+              <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+                <LogOut className="h-4 w-4 mr-2" />
                 Log out
               </DropdownMenuItem>
             </DropdownMenuContent>

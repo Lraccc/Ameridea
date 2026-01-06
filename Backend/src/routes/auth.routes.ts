@@ -210,6 +210,7 @@ router.put(
       });
 
       if (verifyError) {
+        console.error('Password verification error:', verifyError);
         res.status(400).json({ error: 'Current password is incorrect' });
         return;
       }

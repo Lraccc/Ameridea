@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Image, Dimensions, Modal, TextInput, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Image, Dimensions, Modal, TextInput, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '@/context/AuthContext';
@@ -65,6 +65,9 @@ export default function SettingsScreen() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
+  // Refresh control
+  const [refreshing, setRefreshing] = useState(false);
 
   // Slideshow effect
   useEffect(() => {
@@ -85,6 +88,29 @@ export default function SettingsScreen() {
       setProfileImage(user.profilePicture);
     }
   }, [user?.profilePicture]);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      // Fetch latest user data from the server
+      const userData = await authService.getCurrentUser();
+      
+      // Update auth context with fresh data
+      if (updateUser) {
+        updateUser(userData);
+      }
+      
+      // Update local profile image state
+      if (userData.profilePicture) {
+        setProfileImage(userData.profilePicture);
+      }
+    } catch (error: any) {
+      console.error('Refresh error:', error);
+      Alert.alert('Error', 'Failed to refresh data');
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const handleLogout = () => {
     Alert.alert(
@@ -223,7 +249,19 @@ export default function SettingsScreen() {
     <>
       <StatusBar style="dark" />
       <SafeAreaView style={styles.container}>
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <ScrollView 
+          contentContainerStyle={styles.scrollContainer}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor="#2563EB"
+              colors={['#2563EB']}
+              title="Pull to refresh"
+              titleColor="#6B7280"
+            />
+          }
+        >
           <Text style={styles.title}>Settings & Profile</Text>
           
           {/* User Profile Card */}

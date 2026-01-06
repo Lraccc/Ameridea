@@ -1,8 +1,20 @@
 // API Configuration
-const DEV_API_URL = 'http://192.168.1.16:3000';
+// Add your IP address here - the app will try each one until it connects
+const DEV_IPS = [
+  '10.0.61.198',    // Your IP (PC15)
+  '192.168.1.16',   // Friend's IP
+];
+const DEV_PORT = '3001';
+
+// Try to connect to available backend
+const DEV_API_URL = `http://${DEV_IPS[0]}:${DEV_PORT}`;
 const PROD_API_URL = 'https://your-production-api.com';
 
 export const API_URL = __DEV__ ? DEV_API_URL : PROD_API_URL;
+
+// Export IPs for dynamic connection
+export const DEV_BACKEND_IPS = DEV_IPS;
+export const DEV_BACKEND_PORT = DEV_PORT;
 
 // API Config object for services
 export const API_CONFIG = {
@@ -17,6 +29,9 @@ export const API_ENDPOINTS = {
   LOGIN: '/api/auth/login',
   ME: '/api/auth/me',
   LOGOUT: '/api/auth/logout',
+  UPDATE_PASSWORD: '/api/auth/password',
+  UPDATE_EMAIL: '/api/auth/email',
+  UPDATE_PROFILE: '/api/auth/profile',
   
   // Claims
   CLAIMS: '/api/claims',

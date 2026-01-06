@@ -101,7 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       // Store both user data and auth token for persistence
       await AsyncStorage.setItem('user', JSON.stringify(response.user));
-      await AsyncStorage.setItem('authToken', 'authenticated'); // Simple token for demo
+      // Note: authService.login already stores the token via apiClient.setAuthToken
       await AsyncStorage.setItem('loginTime', new Date().toISOString());
       
       dispatch({ type: 'LOGIN_SUCCESS', payload: response.user });
@@ -121,7 +121,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       // Store both user data and auth token for persistence
       await AsyncStorage.setItem('user', JSON.stringify(response.user));
-      await AsyncStorage.setItem('authToken', 'authenticated');
+      // Note: authService.register already stores the token via apiClient.setAuthToken
       await AsyncStorage.setItem('loginTime', new Date().toISOString());
       
       dispatch({ type: 'REGISTER_SUCCESS', payload: response.user });

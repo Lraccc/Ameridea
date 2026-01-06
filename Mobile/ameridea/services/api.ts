@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { API_CONFIG } from '../config/api';
+import { DEV_BACKEND_IPS, DEV_BACKEND_PORT, API_CONFIG } from '../config/api';
 
 interface RequestOptions extends RequestInit {
   requiresAuth?: boolean;
@@ -8,10 +8,43 @@ interface RequestOptions extends RequestInit {
 class ApiClient {
   private baseURL: string;
   private timeout: number;
+  private initialized: boolean = false;
 
   constructor() {
     this.baseURL = API_CONFIG.BASE_URL;
     this.timeout = API_CONFIG.TIMEOUT;
+  }
+
+  // Auto-detect which backend IP is available
+  async initializeConnection(): Promise<void> {
+    if (this.initialized) return;
+    
+    if (__DEV__) {
+      for (const ip of DEV_BACKEND_IPS) {
+        const testUrl = `http://${ip}:${DEV_BACKEND_PORT}/health`;
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 3000);
+          
+          const response = await fetch(testUrl, { 
+            signal: controller.signal,
+            method: 'GET'
+          });
+          clearTimeout(timeoutId);
+          
+          if (response.ok) {
+            this.baseURL = `http://${ip}:${DEV_BACKEND_PORT}`;
+            console.log(`✅ Connected to backend at ${this.baseURL}`);
+            this.initialized = true;
+            return;
+          }
+        } catch (e) {
+          console.log(`❌ Backend not available at ${ip}:${DEV_BACKEND_PORT}`);
+        }
+      }
+      console.warn('⚠️ Could not connect to any backend, using default');
+    }
+    this.initialized = true;
   }
 
   private async getAuthToken(): Promise<string | null> {
@@ -27,6 +60,9 @@ class ApiClient {
     endpoint: string,
     options: RequestOptions = {}
   ): Promise<T> {
+    // Ensure connection is initialized
+    await this.initializeConnection();
+    
     const { requiresAuth = true, headers = {}, ...restOptions } = options;
 
     const config: RequestInit = {

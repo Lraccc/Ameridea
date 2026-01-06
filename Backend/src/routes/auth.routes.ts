@@ -182,4 +182,146 @@ router.post('/logout', authenticate, async (_req: AuthRequest, res: Response) =>
   res.status(200).json({ message: 'Logged out successfully' });
 });
 
+// Update password
+router.put(
+  '/password',
+  authenticate,
+  [
+    body('currentPassword').notEmpty().withMessage('Current password is required'),
+    body('newPassword').isLength({ min: 6 }).withMessage('New password must be at least 6 characters'),
+  ],
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json({ errors: errors.array() });
+        return;
+      }
+
+      const { currentPassword, newPassword } = req.body;
+
+      // Verify current password by trying to sign in
+      const { error: verifyError } = await supabaseAdmin.auth.signInWithPassword({
+        email: req.user!.email,
+        password: currentPassword,
+      });
+
+      if (verifyError) {
+        res.status(400).json({ error: 'Current password is incorrect' });
+        return;
+      }
+
+      // Update password in Supabase Auth
+      const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+        req.user!.id,
+        { password: newPassword }
+      );
+
+      if (updateError) {
+        res.status(400).json({ error: updateError.message });
+        return;
+      }
+
+      res.status(200).json({ message: 'Password updated successfully' });
+    } catch (error) {
+      console.error('Update password error:', error);
+      res.status(500).json({ error: 'Failed to update password' });
+    }
+  }
+);
+
+// Update email
+router.put(
+  '/email',
+  authenticate,
+  [
+    body('newEmail').isEmail().withMessage('Valid email is required'),
+  ],
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json({ errors: errors.array() });
+        return;
+      }
+
+      const { newEmail } = req.body;
+
+      // Update email in Supabase Auth
+      const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(
+        req.user!.id,
+        { email: newEmail }
+      );
+
+      if (authError) {
+        res.status(400).json({ error: authError.message });
+        return;
+      }
+
+      // Update email in users table
+      const { error: dbError } = await supabaseAdmin
+        .from('users')
+        .update({ email: newEmail })
+        .eq('id', req.user!.id);
+
+      if (dbError) {
+        res.status(400).json({ error: dbError.message });
+        return;
+      }
+
+      res.status(200).json({ message: 'Email updated successfully', email: newEmail });
+    } catch (error) {
+      console.error('Update email error:', error);
+      res.status(500).json({ error: 'Failed to update email' });
+    }
+  }
+);
+
+// Update profile
+router.put(
+  '/profile',
+  authenticate,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { fullName, dateOfBirth } = req.body;
+
+      const updates: Record<string, string> = {};
+      if (fullName) updates.full_name = fullName;
+      if (dateOfBirth) updates.date_of_birth = dateOfBirth;
+
+      if (Object.keys(updates).length === 0) {
+        res.status(400).json({ error: 'No fields to update' });
+        return;
+      }
+
+      const { data, error } = await supabaseAdmin
+        .from('users')
+        .update(updates)
+        .eq('id', req.user!.id)
+        .select()
+        .single();
+
+      if (error) {
+        res.status(400).json({ error: error.message });
+        return;
+      }
+
+      res.status(200).json({
+        message: 'Profile updated successfully',
+        user: {
+          id: data.id,
+          email: data.email,
+          fullName: data.full_name,
+          dateOfBirth: data.date_of_birth,
+          policyNumber: data.policy_number,
+          policyStatus: data.policy_status,
+        }
+      });
+    } catch (error) {
+      console.error('Update profile error:', error);
+      res.status(500).json({ error: 'Failed to update profile' });
+    }
+  }
+);
+
 export default router;

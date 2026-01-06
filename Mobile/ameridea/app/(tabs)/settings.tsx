@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Image, Dimensions, Modal, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Image, Dimensions, Modal, TextInput, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '@/context/AuthContext';
@@ -7,6 +7,7 @@ import { Card } from '@/components/Card';
 import { HistoryItem } from '@/components/HistoryItem';
 import { Button } from '@/components/Button';
 import { mockHistory } from '@/data/mockData';
+import { authService } from '@/services/auth.service';
 import { 
   User, 
   Settings as SettingsIcon, 
@@ -20,7 +21,9 @@ import {
   Lock,
   Edit,
   X,
-  DollarSign
+  DollarSign,
+  Eye,
+  EyeOff
 } from 'lucide-react-native';
 import { StatusBar } from 'expo-status-bar';
 
@@ -52,6 +55,15 @@ export default function SettingsScreen() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  
+  // Loading states
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+  const [isUpdatingEmail, setIsUpdatingEmail] = useState(false);
+  
+  // Password visibility toggles
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Slideshow effect
   useEffect(() => {
@@ -102,7 +114,7 @@ export default function SettingsScreen() {
     }
   };
   
-  const handleUpdateEmail = () => {
+  const handleUpdateEmail = async () => {
     if (!newEmail || !confirmEmail) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
@@ -118,14 +130,21 @@ export default function SettingsScreen() {
       return;
     }
     
-    // Simulate API call
-    Alert.alert('Success', 'Email updated successfully!');
-    setShowEmailModal(false);
-    setNewEmail('');
-    setConfirmEmail('');
+    setIsUpdatingEmail(true);
+    try {
+      await authService.updateEmail(newEmail);
+      Alert.alert('Success', 'Email updated successfully!');
+      setShowEmailModal(false);
+      setNewEmail('');
+      setConfirmEmail('');
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to update email');
+    } finally {
+      setIsUpdatingEmail(false);
+    }
   };
   
-  const handleUpdatePassword = () => {
+  const handleUpdatePassword = async () => {
     if (!currentPassword || !newPassword || !confirmPassword) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
@@ -141,12 +160,23 @@ export default function SettingsScreen() {
       return;
     }
     
-    // Simulate API call
-    Alert.alert('Success', 'Password updated successfully!');
-    setShowPasswordModal(false);
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
+    setIsUpdatingPassword(true);
+    try {
+      await authService.updatePassword(currentPassword, newPassword);
+      Alert.alert('Success', 'Password updated successfully!');
+      setShowPasswordModal(false);
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      // Reset visibility states
+      setShowCurrentPassword(false);
+      setShowNewPassword(false);
+      setShowConfirmPassword(false);
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to update password');
+    } finally {
+      setIsUpdatingPassword(false);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -360,49 +390,158 @@ export default function SettingsScreen() {
               <View style={styles.modalBody}>
                 <View style={styles.inputGroup}>
                   <Text style={styles.inputLabel}>Current Password</Text>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Enter current password"
-                    value={currentPassword}
-                    onChangeText={setCurrentPassword}
-                    secureTextEntry
-                  />
+                  <View style={styles.inputContainer}>
+                    <TextInput
+                      style={styles.inputWithIcon}
+                      placeholder="Enter current password"
+                      value={currentPassword}
+                      onChangeText={setCurrentPassword}
+                      secureTextEntry={!showCurrentPassword}
+                    />
+                    <TouchableOpacity 
+                      style={styles.eyeIcon}
+                      onPress={() => setShowCurrentPassword(!showCurrentPassword)}
+                    >
+                      {showCurrentPassword ? (
+                        <EyeOff size={20} color="#6B7280" />
+                      ) : (
+                        <Eye size={20} color="#6B7280" />
+                      )}
+                    </TouchableOpacity>
+                  </View>
                 </View>
                 
                 <View style={styles.inputGroup}>
                   <Text style={styles.inputLabel}>New Password</Text>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Enter new password"
-                    value={newPassword}
-                    onChangeText={setNewPassword}
-                    secureTextEntry
-                  />
+                  <View style={styles.inputContainer}>
+                    <TextInput
+                      style={styles.inputWithIcon}
+                      placeholder="Enter new password"
+                      value={newPassword}
+                      onChangeText={setNewPassword}
+                      secureTextEntry={!showNewPassword}
+                    />
+                    <TouchableOpacity 
+                      style={styles.eyeIcon}
+                      onPress={() => setShowNewPassword(!showNewPassword)}
+                    >
+                      {showNewPassword ? (
+                        <EyeOff size={20} color="#6B7280" />
+                      ) : (
+                        <Eye size={20} color="#6B7280" />
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={styles.inputHint}>Password must be at least 6 characters</Text>
                 </View>
                 
                 <View style={styles.inputGroup}>
                   <Text style={styles.inputLabel}>Confirm New Password</Text>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Confirm new password"
-                    value={confirmPassword}
-                    onChangeText={setConfirmPassword}
-                    secureTextEntry
-                  />
+                  <View style={styles.inputContainer}>
+                    <TextInput
+                      style={styles.inputWithIcon}
+                      placeholder="Confirm new password"
+                      value={confirmPassword}
+                      onChangeText={setConfirmPassword}
+                      secureTextEntry={!showConfirmPassword}
+                    />
+                    <TouchableOpacity 
+                      style={styles.eyeIcon}
+                      onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff size={20} color="#6B7280" />
+                      ) : (
+                        <Eye size={20} color="#6B7280" />
+                      )}
+                    </TouchableOpacity>
+                  </View>
                 </View>
                 
                 <View style={styles.modalButtons}>
                   <TouchableOpacity 
                     style={[styles.modalButton, styles.cancelButton]}
                     onPress={() => setShowPasswordModal(false)}
+                    disabled={isUpdatingPassword}
                   >
                     <Text style={styles.cancelButtonText}>Cancel</Text>
                   </TouchableOpacity>
                   <TouchableOpacity 
-                    style={[styles.modalButton, styles.saveButton]}
+                    style={[styles.modalButton, styles.saveButton, isUpdatingPassword && styles.disabledButton]}
                     onPress={handleUpdatePassword}
+                    disabled={isUpdatingPassword}
                   >
-                    <Text style={styles.saveButtonText}>Update</Text>
+                    {isUpdatingPassword ? (
+                      <ActivityIndicator color="#FFFFFF" size="small" />
+                    ) : (
+                      <Text style={styles.saveButtonText}>Update</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </View>
+        </Modal>
+        
+        {/* Email Update Modal */}
+        <Modal
+          visible={showEmailModal}
+          animationType="slide"
+          transparent={true}
+          onRequestClose={() => setShowEmailModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Update Email</Text>
+                <TouchableOpacity onPress={() => setShowEmailModal(false)}>
+                  <X size={24} color="#6B7280" />
+                </TouchableOpacity>
+              </View>
+              
+              <View style={styles.modalBody}>
+                <View style={styles.inputGroup}>
+                  <Text style={styles.inputLabel}>New Email Address</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter new email"
+                    value={newEmail}
+                    onChangeText={setNewEmail}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                  />
+                </View>
+                
+                <View style={styles.inputGroup}>
+                  <Text style={styles.inputLabel}>Confirm Email Address</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Confirm new email"
+                    value={confirmEmail}
+                    onChangeText={setConfirmEmail}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                  />
+                </View>
+                
+                <View style={styles.modalButtons}>
+                  <TouchableOpacity 
+                    style={[styles.modalButton, styles.cancelButton]}
+                    onPress={() => setShowEmailModal(false)}
+                    disabled={isUpdatingEmail}
+                  >
+                    <Text style={styles.cancelButtonText}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.modalButton, styles.saveButton, isUpdatingEmail && styles.disabledButton]}
+                    onPress={handleUpdateEmail}
+                    disabled={isUpdatingEmail}
+                  >
+                    {isUpdatingEmail ? (
+                      <ActivityIndicator color="#FFFFFF" size="small" />
+                    ) : (
+                      <Text style={styles.saveButtonText}>Update</Text>
+                    )}
                   </TouchableOpacity>
                 </View>
               </View>
@@ -657,6 +796,29 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#1F2937',
   },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 8,
+  },
+  inputWithIcon: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: '#1F2937',
+  },
+  eyeIcon: {
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+  },
+  inputHint: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginTop: 4,
+  },
   modalButtons: {
     flexDirection: 'row',
     gap: 12,
@@ -673,6 +835,9 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     backgroundColor: '#2563EB',
+  },
+  disabledButton: {
+    backgroundColor: '#93C5FD',
   },
   cancelButtonText: {
     fontSize: 16,

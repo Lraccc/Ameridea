@@ -5,6 +5,7 @@ export interface User {
   dateOfBirth: string;
   policyNumber: string;
   policyStatus: 'Active' | 'Inactive' | 'Pending';
+  profilePicture?: string;
 }
 
 export interface AuthState {

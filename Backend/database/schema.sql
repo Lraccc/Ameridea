@@ -11,6 +11,7 @@ CREATE TABLE users (
   date_of_birth DATE NOT NULL,
   policy_number TEXT UNIQUE,
   policy_status TEXT DEFAULT 'Active' CHECK (policy_status IN ('Active', 'Inactive', 'Suspended')),
+  profile_picture TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -177,6 +178,10 @@ ALTER TABLE history ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can view own profile"
   ON users FOR SELECT
   USING (auth.uid() = id);
+
+CREATE POLICY "Users can insert during registration"
+  ON users FOR INSERT
+  WITH CHECK (auth.uid() = id);
 
 CREATE POLICY "Users can update own profile"
   ON users FOR UPDATE

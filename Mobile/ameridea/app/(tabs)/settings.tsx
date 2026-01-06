@@ -37,13 +37,14 @@ const advertisementImages = [
 ];
 
 export default function SettingsScreen() {
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
   const [showHistory, setShowHistory] = useState(false);
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
   const adIntervalRef = useRef<NodeJS.Timeout | null>(null);
   
   // Profile picture state
-  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [profileImage, setProfileImage] = useState<string | null>(user?.profilePicture || null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   
   // Email update modal
   const [showEmailModal, setShowEmailModal] = useState(false);
@@ -78,6 +79,13 @@ export default function SettingsScreen() {
     };
   }, []);
 
+  // Load profile picture when user changes
+  useEffect(() => {
+    if (user?.profilePicture) {
+      setProfileImage(user.profilePicture);
+    }
+  }, [user?.profilePicture]);
+
   const handleLogout = () => {
     Alert.alert(
       'Logout',
@@ -106,11 +114,33 @@ export default function SettingsScreen() {
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
+      base64: true, // Get base64 for uploading
     });
     
-    if (!result.canceled) {
-      setProfileImage(result.assets[0].uri);
-      Alert.alert('Success', 'Profile picture updated successfully!');
+    if (!result.canceled && result.assets[0].base64) {
+      setIsUploadingImage(true);
+      try {
+        // Create data URI for storage
+        const imageData = `data:image/jpeg;base64,${result.assets[0].base64}`;
+        
+        // Upload to backend
+        const response = await authService.updateProfilePicture(imageData);
+        
+        // Update local state
+        setProfileImage(imageData);
+        
+        // Update auth context with new user data
+        if (updateUser) {
+          updateUser(response.user);
+        }
+        
+        Alert.alert('Success', 'Profile picture updated successfully!');
+      } catch (error: any) {
+        console.error('Upload error:', error);
+        Alert.alert('Error', error.message || 'Failed to upload profile picture');
+      } finally {
+        setIsUploadingImage(false);
+      }
     }
   };
   
@@ -200,6 +230,10 @@ export default function SettingsScreen() {
           <Card style={styles.profileCard}>
             <View style={styles.profileHeader}>
               <View style={styles.avatarContainer}>
+                {/* Show 'Tap to update' only if no profile image is set */}
+                {!profileImage && (
+                  <Text style={styles.avatarHelperText}>Tap to update</Text>
+                )}
                 {profileImage ? (
                   <Image source={{ uri: profileImage }} style={styles.avatarImage} />
                 ) : (
@@ -209,10 +243,14 @@ export default function SettingsScreen() {
                   style={styles.cameraButton}
                   onPress={handlePickImage}
                   accessibilityLabel="Update profile picture"
+                  disabled={isUploadingImage}
                 >
-                  <Camera size={16} color="#FFFFFF" />
+                  {isUploadingImage ? (
+                    <ActivityIndicator color="#FFFFFF" size="small" />
+                  ) : (
+                    <Camera size={16} color="#FFFFFF" />
+                  )}
                 </TouchableOpacity>
-                <Text style={styles.avatarHelperText}>Tap to update</Text>
               </View>
               <View style={styles.profileInfo}>
                 <Text style={styles.profileName}>{user.fullName}</Text>

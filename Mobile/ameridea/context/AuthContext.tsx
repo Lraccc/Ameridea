@@ -9,6 +9,7 @@ interface AuthContextType extends AuthState {
   register: (data: RegisterData) => Promise<boolean>;
   logout: () => void;
   checkAuthStatus: () => Promise<void>;
+  updateUser: (user: User) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -149,6 +150,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updateUser = async (user: User) => {
+    try {
+      await AsyncStorage.setItem('user', JSON.stringify(user));
+      dispatch({ type: 'LOGIN_SUCCESS', payload: user });
+    } catch (error) {
+      console.error('Error updating user:', error);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -157,6 +167,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         register,
         logout,
         checkAuthStatus,
+        updateUser,
       }}
     >
       {children}

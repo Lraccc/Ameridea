@@ -4,7 +4,7 @@ const DEV_IPS = [
   '10.0.61.198',    // Your IP (PC15)
   '192.168.1.16',   // Friend's IP
 ];
-const DEV_PORT = '3001';
+const DEV_PORT = '3000';
 
 // Try to connect to available backend
 const DEV_API_URL = `http://${DEV_IPS[0]}:${DEV_PORT}`;

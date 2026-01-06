@@ -74,6 +74,7 @@ router.post(
           dateOfBirth: profileData.date_of_birth,
           policyNumber: profileData.policy_number,
           policyStatus: profileData.policy_status,
+          profilePicture: profileData.profile_picture,
         },
         token,
       });
@@ -139,6 +140,7 @@ router.post(
           dateOfBirth: profileData.date_of_birth,
           policyNumber: profileData.policy_number,
           policyStatus: profileData.policy_status,
+          profilePicture: profileData.profile_picture,
         },
         token,
       });
@@ -170,6 +172,7 @@ router.get('/me', authenticate, async (req: AuthRequest, res: Response) => {
       dateOfBirth: data.date_of_birth,
       policyNumber: data.policy_number,
       policyStatus: data.policy_status,
+      profilePicture: data.profile_picture,
     });
   } catch (error) {
     console.error('Get user error:', error);
@@ -283,11 +286,12 @@ router.put(
   authenticate,
   async (req: AuthRequest, res: Response) => {
     try {
-      const { fullName, dateOfBirth } = req.body;
+      const { fullName, dateOfBirth, profilePicture } = req.body;
 
       const updates: Record<string, string> = {};
       if (fullName) updates.full_name = fullName;
       if (dateOfBirth) updates.date_of_birth = dateOfBirth;
+      if (profilePicture !== undefined) updates.profile_picture = profilePicture;
 
       if (Object.keys(updates).length === 0) {
         res.status(400).json({ error: 'No fields to update' });
@@ -315,6 +319,7 @@ router.put(
           dateOfBirth: data.date_of_birth,
           policyNumber: data.policy_number,
           policyStatus: data.policy_status,
+          profilePicture: data.profile_picture,
         }
       });
     } catch (error) {

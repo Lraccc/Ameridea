@@ -69,4 +69,11 @@ export const authService = {
       data
     );
   },
+
+  async updateProfilePicture(profilePicture: string): Promise<{ message: string; user: User }> {
+    return apiClient.put<{ message: string; user: User }>(
+      API_ENDPOINTS.UPDATE_PROFILE,
+      { profilePicture }
+    );
+  },
 };
